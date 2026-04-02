@@ -1,0 +1,14 @@
+# Virtual env + secrets
+.venv/
+.env
+.env.*
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Local runtime artifact
+temp_contract.pdf
+
+# macOS
+.DS_Store
