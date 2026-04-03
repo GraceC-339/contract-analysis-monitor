@@ -24,6 +24,9 @@ st.set_page_config(layout="wide")
 st.title("🛡️ PFI Contract Analysis & Monitor Platform")
 st.write("Upload a contract to observe the pipeline steps and extract liability data.")
 
+UPLOADS_DIR = "uploads"
+os.makedirs(UPLOADS_DIR, exist_ok=True)
+
 # Set up the two columns
 col1, col2 = st.columns([1, 2])
 
@@ -44,19 +47,39 @@ with col1:
     if "db" not in st.session_state:
         st.session_state.db = None # This will hold our vector database after processing
         st.session_state.chunks_count = 0 # Just to show how many chunks we created in the monitor
+        st.session_state.active_filename = None
+
+    if uploaded_file is not None:
+        uploaded_filename = os.path.basename(uploaded_file.name)
+        if uploaded_filename != st.session_state.active_filename:
+            # New file selected: reset index so we rebuild for the active document.
+            st.session_state.db = None
+            st.session_state.active_filename = uploaded_filename
 
     if uploaded_file is not None and st.session_state.db is None:
         status_box.info("Pipeline triggered. Starting ingestion...")
+
+        uploaded_filename = st.session_state.active_filename
+        upload_path = os.path.join(UPLOADS_DIR, uploaded_filename)
+
+        for filename in os.listdir(UPLOADS_DIR):
+            existing_path = os.path.join(UPLOADS_DIR, filename)
+            if (
+                filename.lower().endswith(".pdf")
+                and filename != uploaded_filename
+                and os.path.isfile(existing_path)
+            ):
+                os.remove(existing_path)
         
         # Save uploaded file temporarily to read it
-        with open("temp_contract.pdf", "wb") as f:
+        with open(upload_path, "wb") as f:
             f.write(uploaded_file.getvalue())
             
         time.sleep(1) # Fake delay for visual effect
         
         # Step 1: Document Loading
         status_box.warning("🔄 Step 1: Parsing PDF structure...")
-        loader = PyPDFLoader("temp_contract.pdf")
+        loader = PyPDFLoader(upload_path)
         docs = loader.load()
         m1.metric("Pages Loaded", len(docs))
         time.sleep(1)
@@ -80,6 +103,9 @@ with col1:
 # --- RIGHT COLUMN: AI ANALYSIS ---
 with col2:
     st.subheader("🤖 AI Contract Assisstant")
+
+    if st.session_state.get("active_filename"):
+        st.caption(f"Active document: {st.session_state.active_filename}")
     
     if st.session_state.db is not None:
         # Prompt user for a query
@@ -92,6 +118,8 @@ with col2:
             with st.spinner("Retrieving relevant contract chunks and generating answer..."):
                 
                 # 1. Setup the retriever from our database
+
+                # Dynamically create a retriever that filters by the uploaded filename to ensure we only get relevant chunks for this query
                 retriever = st.session_state.db.as_retriever(search_kwargs={"k": 3})
                 
                 #2. Define a helper function to format retrieved documents into one block of text
@@ -103,7 +131,7 @@ with col2:
                 
                 # 4. Create prompt template
                 system_prompt = (
-                    "You are a contract analysis expert. Use the following context to answer the question. "
+                    "You are a contract analysis expert. Use the following context to answer the question. Explain the answer in simple terms."
                     "If the answer is not present in the context, state that it cannot be found. \n\n"
                     "Context: {context}"
                 )
@@ -112,6 +140,17 @@ with col2:
                     ("human", "{input}"),
                 ])
                 
+                # --- DEBUGGING ---
+                print("=== DEBUG: RAG FLOW ===")
+                # 1. Check if the database actually finds relevant chunks for the query
+                test_docs = retriever.invoke(user_query)
+                print(f"Retrieved {len(test_docs)} documents for query: '{user_query}'")
+
+                for i, doc in enumerate(test_docs):
+                    print(f"Doc {i+1} Metadata: {doc.metadata}")
+
+                print("-------------------------------")
+
                 # 5. The Modern LCEL Chain (Using the pipe operator for clarity)
                 rag_chain = (
                     {"context": retriever | format_docs, "input": RunnablePassthrough()}

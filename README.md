@@ -6,6 +6,7 @@ The app provides:
 - A pipeline monitor (load -> chunk -> embed -> index)
 - AI Q&A over uploaded contracts
 - Retrieved source chunk inspection for traceability
+- Preserves the original uploaded filename for the active document
 
 ## Tech Stack
 
@@ -20,6 +21,7 @@ The app provides:
 - `app.py` - Main Streamlit application
 - `requirement.txt` - Python dependencies
 - `.env` - Optional local environment variables
+- `uploads/` - Temporary storage for the active uploaded PDF
 
 ## Prerequisites
 
@@ -64,12 +66,13 @@ Open the URL shown in your terminal (usually `http://localhost:8501`).
 3. Enter a question in the right panel.
 4. Click **Run AI Analysis**.
 5. Expand **View Retrieved Contract Source Segments** to audit supporting chunks.
+6. Check the active document caption in the right panel to confirm which PDF is being analyzed.
 
 ## Notes
 
 - Processing and vector DB are stored in Streamlit session state.
 - Uploading a new PDF in the same session may require refreshing/restarting to re-index cleanly.
-- The app writes uploaded content to `temp_contract.pdf` during processing.
+- The app stores the current upload in `uploads/` using the original filename and removes older PDFs from that folder.
 
 ## Troubleshooting
 

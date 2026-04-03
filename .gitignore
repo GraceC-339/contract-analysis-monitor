@@ -7,8 +7,8 @@
 __pycache__/
 *.py[cod]
 
-# Local runtime artifact
-temp_contract.pdf
+# Local runtime artifacts
+uploads/
 
 # macOS
 .DS_Store
