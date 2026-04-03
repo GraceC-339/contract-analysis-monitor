@@ -1,7 +1,7 @@
 import streamlit as st
 import time
 import os
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
 
 # LangChain and Data tools
 from langchain_community.document_loaders import PyPDFLoader
@@ -17,8 +17,8 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnablePassthrough
 from langchain_core.output_parsers import StrOutputParser
 
-# Load OpenAI API Key from .env
-load_dotenv()
+# Load OpenAI API Key from .env (Not using in this example since we're using Ollama, but keeping for reference if needed)
+# load_dotenv()
 
 st.set_page_config(layout="wide")
 st.title("🛡️ PFI Contract Analysis & Monitor Platform")
