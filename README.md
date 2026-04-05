@@ -8,7 +8,7 @@ The app provides:
 - Retrieved source chunk inspection for traceability
 - Preserves the original uploaded filename for the active document
 
-<img src="screenshot.png" alt="Contract Analysis Page" width="800" />
+<img src="Screenshot.png" alt="Contract Analysis Page" width="800" />
 
 ## Tech Stack
 
