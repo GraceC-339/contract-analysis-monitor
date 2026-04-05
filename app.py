@@ -21,7 +21,7 @@ from langchain_core.output_parsers import StrOutputParser
 # load_dotenv()
 
 st.set_page_config(layout="wide")
-st.title("🛡️ PFI Contract Analysis & Monitor Platform")
+st.title("🛡️ Contract Analysis & Monitor Platform")
 st.write("Upload a contract to observe the pipeline steps and extract liability data.")
 
 UPLOADS_DIR = "uploads"
